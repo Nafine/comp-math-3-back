@@ -31,6 +31,10 @@ func Solve(method string, ig numeric.Integral) (numeric.Solution, error) {
 		return numeric.Solution{}, errors.New("eps must be greater than zero")
 	}
 
+	if _, ok := methods[method]; !ok {
+		return numeric.Solution{}, errors.New("unknown method")
+	}
+
 	val0, err0 := methods[method](ig)
 	if err0 != nil {
 		return numeric.Solution{}, err0
