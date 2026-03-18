@@ -15,7 +15,13 @@ var functions = []func(x float64) float64{
 		return math.Exp(-x * x)
 	},
 	func(x float64) float64 {
-		return math.Sin(10*x) * math.Exp(-x)
+		return 1 / math.Sqrt(math.Abs(x))
+	},
+	func(x float64) float64 {
+		return 1 / x
+	},
+	func(x float64) float64 {
+		return 1 / math.Sqrt(math.Abs(2*x-x*x))
 	},
 }
 
