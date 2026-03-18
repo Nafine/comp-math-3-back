@@ -86,10 +86,12 @@ func Solve(method string, ig numeric.Integral) (numeric.Solution, error) {
 			y1 := TryToCompute(f, bp-epsOffset)
 			y2 := TryToCompute(f, bp+epsOffset)
 
-			// Проверяем разные случаи расходимости
-			if y1 == nil && y2 == nil {
-				// Точка неустранимого разрыва (например, 1/x в 0)
-				// Проверяем поведение рядом с точкой
+			if y1 != nil && y2 != nil {
+				if math.Abs(*y1-*y2) > epsOffset {
+					converges = false
+					break
+				}
+			} else if y1 == nil && y2 == nil {
 				y1Near := TryToCompute(f, bp-epsOffset)
 				y2Near := TryToCompute(f, bp+epsOffset)
 				if y1Near == nil || y2Near == nil {
@@ -97,9 +99,6 @@ func Solve(method string, ig numeric.Integral) (numeric.Solution, error) {
 					break
 				}
 			} else {
-				// С одной стороны функция существует, с другой - нет
-				// Это может быть устранимый разрыв или особенность типа 1/sqrt(x)
-				// Дополнительная проверка
 				var yExist *float64
 				if y1 != nil {
 					yExist = y1
@@ -107,7 +106,6 @@ func Solve(method string, ig numeric.Integral) (numeric.Solution, error) {
 					yExist = y2
 				}
 
-				// Проверяем, стремится ли функция к бесконечности
 				if math.IsInf(*yExist, 0) {
 					converges = false
 					break
@@ -120,21 +118,16 @@ func Solve(method string, ig numeric.Integral) (numeric.Solution, error) {
 				"(has non-integrable singularity)")
 		}
 
-		// Если интеграл сходится, обрабатываем особые точки
 		if len(breakpoints) == 1 {
-			fmt.Println("breakpoints:", len(breakpoints))
 			singularity := breakpoints[0]
 
-			// Особенность на левой границе
 			if math.Abs(singularity-a) < epsOffset {
 				ig.A = a + epsOffset
 				return solveConvergent(method, ig)
 			} else if math.Abs(singularity-b) < epsOffset {
-				// Особенность на правой границе
 				ig.B = b - epsOffset
 				return solveConvergent(method, ig)
 			} else {
-				// Особенность внутри интервала: разбиваем на две части
 				ig1 := ig
 				ig1.B = singularity - epsOffset
 				res1, err1 := solveConvergent(method, ig1)
@@ -155,8 +148,6 @@ func Solve(method string, ig numeric.Integral) (numeric.Solution, error) {
 				}, nil
 			}
 		} else {
-			// Несколько точек разрыва
-			// Сортируем точки разрыва
 			breakpointsSorted := make([]float64, len(breakpoints))
 			copy(breakpointsSorted, breakpoints)
 			for i := 0; i < len(breakpointsSorted)-1; i++ {
@@ -170,7 +161,6 @@ func Solve(method string, ig numeric.Integral) (numeric.Solution, error) {
 			totalValue := 0.0
 			totalPartitions := 0
 
-			// Интервал от a до первой точки разрыва
 			if a < breakpointsSorted[0]-epsOffset {
 				igSeg := ig
 				igSeg.B = breakpointsSorted[0] - epsOffset
@@ -182,7 +172,6 @@ func Solve(method string, ig numeric.Integral) (numeric.Solution, error) {
 				totalPartitions += res.Partitions
 			}
 
-			// Интервалы между точками разрыва
 			for i := 0; i < len(breakpointsSorted)-1; i++ {
 				if breakpointsSorted[i]+epsOffset < breakpointsSorted[i+1]-epsOffset {
 					igSeg := ig
@@ -198,7 +187,6 @@ func Solve(method string, ig numeric.Integral) (numeric.Solution, error) {
 				}
 			}
 
-			// Интервал от последней точки разрыва до b
 			if breakpointsSorted[len(breakpointsSorted)-1]+epsOffset < b {
 				igSeg := ig
 				igSeg.A = breakpointsSorted[len(breakpointsSorted)-1] + epsOffset
