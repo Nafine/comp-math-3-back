@@ -9,12 +9,12 @@ import (
 )
 
 type SolveRequest struct {
-	FunctionId *int    `json:"functionId" binding:"required"`
-	Method     string  `json:"method" binding:"required"`
-	Tolerance  float64 `json:"tolerance" binding:"required"`
+	FunctionId *int     `json:"functionId" binding:"required"`
+	Method     string   `json:"method" binding:"required"`
+	Tolerance  *float64 `json:"tolerance" binding:"required"`
 
-	A *float64 `json:"a,omitempty"`
-	B *float64 `json:"b,omitempty"`
+	A *float64 `json:"a" binding:"required"`
+	B *float64 `json:"b" binding:"required"`
 }
 
 type SolveResponse struct {
@@ -33,7 +33,7 @@ func Solve() gin.HandlerFunc {
 
 		ig := numeric.Integral{
 			F:         numeric.GetFunction(*req.FunctionId),
-			Tolerance: req.Tolerance,
+			Tolerance: *req.Tolerance,
 			N:         4,
 			A:         *req.A,
 			B:         *req.B,

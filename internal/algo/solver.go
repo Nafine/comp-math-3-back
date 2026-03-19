@@ -23,7 +23,11 @@ var orderOfAccuracy = map[string]float64{
 	"simpson":           4,
 }
 
-const epsOffset = 1e-6
+const (
+	epsOffset   = 1e-6
+	maxN        = 268435456
+	maxInterval = 50000
+)
 
 func solveConvergent(method string, ig numeric.Integral) (numeric.Solution, error) {
 	if ig.A >= ig.B {
@@ -54,6 +58,11 @@ func solveConvergent(method string, ig numeric.Integral) (numeric.Solution, erro
 
 	for r > ig.Tolerance {
 		ig.N = ig.N * 2
+
+		if ig.N > maxN {
+			return numeric.Solution{}, errors.New("failed to compute integral with provided tolerance")
+		}
+
 		temp := val1
 		val1, err1 = methods[method](ig)
 		if err1 != nil {
@@ -72,6 +81,10 @@ func solveConvergent(method string, ig numeric.Integral) (numeric.Solution, erro
 
 func Solve(method string, ig numeric.Integral) (numeric.Solution, error) {
 	a, b := ig.A, ig.B
+
+	if math.Abs(b-a) > maxInterval {
+		return numeric.Solution{}, errors.New("interval is too big in order to find discontinuity points")
+	}
 
 	breakpoints := GetDiscontinuityPoints(ig, int(math.Ceil(b-a))*1_000)
 
