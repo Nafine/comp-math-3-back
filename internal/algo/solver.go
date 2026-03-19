@@ -76,10 +76,7 @@ func Solve(method string, ig numeric.Integral) (numeric.Solution, error) {
 
 	breakpoints := GetDiscontinuityPoints(ig, int(math.Ceil(b-a))*1_000)
 
-	fmt.Println("breakpoints:", breakpoints)
-
 	if len(breakpoints) != 0 {
-		// Проверка сходимости
 		converges := true
 
 		for _, bp := range breakpoints {
