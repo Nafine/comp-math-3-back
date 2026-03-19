@@ -72,49 +72,10 @@ func solveConvergent(method string, ig numeric.Integral) (numeric.Solution, erro
 
 func Solve(method string, ig numeric.Integral) (numeric.Solution, error) {
 	a, b := ig.A, ig.B
-	f := ig.F
 
 	breakpoints := GetDiscontinuityPoints(ig, int(math.Ceil(b-a))*1_000)
 
 	if len(breakpoints) != 0 {
-		converges := true
-
-		for _, bp := range breakpoints {
-			y1 := TryToCompute(f, bp-epsOffset)
-			y2 := TryToCompute(f, bp+epsOffset)
-
-			if y1 != nil && y2 != nil {
-				if math.Abs(*y1-*y2) > epsOffset {
-					converges = false
-					break
-				}
-			} else if y1 == nil && y2 == nil {
-				y1Near := TryToCompute(f, bp-epsOffset)
-				y2Near := TryToCompute(f, bp+epsOffset)
-				if y1Near == nil || y2Near == nil {
-					converges = false
-					break
-				}
-			} else {
-				var yExist *float64
-				if y1 != nil {
-					yExist = y1
-				} else {
-					yExist = y2
-				}
-
-				if math.IsInf(*yExist, 0) {
-					converges = false
-					break
-				}
-			}
-		}
-
-		if !converges {
-			return numeric.Solution{}, errors.New("integral is not convergent on the interval " +
-				"(has non-integrable singularity)")
-		}
-
 		if len(breakpoints) == 1 {
 			singularity := breakpoints[0]
 
